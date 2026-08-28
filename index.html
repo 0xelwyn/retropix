@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RetroPix Pro • Procedural Pixel Studio</title>
+    <link rel="icon" type="image/png" href="https://iili.io/CmZg6cx.md.png">
+    
+    <style>
+        :root {
+            --bg-deep: #050509;
+            --bg-card: #0d0f17;
+            --bg-input: #161925;
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+            --accent-cyan: #00f0ff;
+            --accent-purple: #7000ff;
+            --accent-magenta: #ff0055;
+            --accent-green: #39ff14;
+            --border: #2b3042;
+            --glow: 0 0 15px rgba(112, 0, 255, 0.5);
+            --ease: cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* --- Reset & Base --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Scrollbar --- */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-purple); }
+
+        /* =========================================
+           SECTION 1: LANDING PAGE (Super Advanced)
+           ========================================= */
+        #landing-page {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1a1a2e 0%, var(--bg-deep) 70%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000; transition: transform 0.8s var(--ease), opacity 0.8s var(--ease);
+            padding: 20px; text-align: center;
+        }
+
+        #landing-page.hidden { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+
+        /* Background Grid Effect */
+        #landing-page::before {
+            content: ''; position: absolute; width: 200%; height: 200%;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 50px 50px; opacity: 0.15;
+            transform: perspective(500px) rotateX(60deg) translateY(-10%);
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 100px; } }
+
+        .hero-logo {
+            width: 120px; height: 120px;
+            background-image: url('https://iili.io/CmZg6cx.md.png');
+            background-size: cover; background-position: center;
+            image-rendering: pixelated; margin-bottom: 20px;
+            position: relative; z-index: 10;
+            filter: drop-shadow(0 0 10px var(--accent-purple));
+        }
+
+        .hero-title {
+            font-size: 3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 4px;
+            background: linear-gradient(to right, var(--accent-cyan), #fff, var(--accent-magenta));
+            -webkit-background-clip: text; color: transparent;
+            margin-bottom: 10px; position: relative; z-index: 10;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem; color: var(--text-muted); max-width: 500px; margin-bottom: 40px;
+            position: relative; z-index: 10; line-height: 1.6;
+        }
+
+        .launch-btn {
+            position: relative; z-index: 10;
+            padding: 18px 40px; font-size: 1.1rem; font-weight: bold; text-transform: uppercase;
+            color: #fff; background: transparent; border: 2px solid var(--accent-cyan);
+            border-radius: 4px; cursor: pointer; overflow: hidden;
+            transition: all 0.3s var(--ease); box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        .launch-btn:hover {
+            background: var(--accent-cyan); color: #000;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
+        }
+
+        .launch-btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: 0.5s;
+        }
+        .launch-btn:hover::before { left: 100%; }
+
+        /* =========================================
+           SECTION 2: APP SHELL (Layout Utama)
+           ========================================= */
+        #app-shell {
+            display: flex; flex-direction: column; height: 100vh;
+            opacity: 0; transition: opacity 0.5s var(--ease);
+        }
+        #app-shell.visible { opacity: 1; }
+
+        /* Header */
+        header {
+            background-color: var(--bg-card); border-bottom: 1px solid var(--border);
+            padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 900;
+        }
+
+        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .brand-logo { width: 32px; height: 32px; image-rendering: pixelated; }
+        .brand-name { font-weight: 800; color: var(--accent-cyan); letter-spacing: 1px; }
+
+        .builder-link {
+            font-size: 0.8rem; color: var(--text-muted); text-decoration: none;
+            transition: color 0.2s; border-bottom: 1px solid transparent;
+        }
+        .builder-link:hover { color: var(--accent-magenta); border-color: var(--accent-magenta); }
+
+        /* Main Workspace */
+        main { flex: 1; display: flex; overflow: hidden; position: relative; }
+
+        /* Side Toolbar (Kiri) */
+        #toolbar {
+            width: 260px; background-color: var(--bg-card); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 15px; gap: 15px;
+            overflow-y: auto; transition: transform 0.3s var(--ease);
+        }
+
+        /* Canvas Area (Tengah) */
+        #canvas-viewport {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background-image: 
+                linear-gradient(45deg, #090a0f 25%, transparent 25%), 
+                linear-gradient(-45deg, #090a0f 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #090a0f 75%),
+                linear-gradient(-45deg, transparent 75%, #090a0f 75%);
+            background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            overflow: hidden; position: relative;
+            padding: 20px;
+        }
+
+        #mainCanvas {
+            image-rendering: pixelated;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            max-width: 100%; max-height: 100%;
+            background-color: white; /* Default BG for transparency simulation */
+        }
+
+        /* Properties Panel (Kanan) */
+        #props-panel {
+            width: 280px; background-color: var(--bg-card); border-left: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 15px; gap: 15px;
+            overflow-y: auto;
+        }
+
+        /* =========================================
+           UI ELEMENTS (Advanced Components)
+           ========================================= */
+        .panel-title {
+            font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);
+            letter-spacing: 2px; margin-bottom: 5px; border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+        }
+
+        .control-group { display: flex; flex-direction: column; gap: 6px; }
+        .control-label { font-size: 0.85rem; color: #b0b8c4; display: flex; justify-content: space-between; }
+        .label-val { color: var(--accent-cyan); font-family: monospace; }
+
+        /* Inputs */
+        select, input[type="number"], input[type="text"] {
+            background-color: var(--bg-input); color: var(--text-main);
+            border: 1px solid var(--border); padding: 10px; border-radius: 6px;
+            font-size: 0.9rem; width: 100%;
+        }
+        select:focus, input:focus { border-color: var(--accent-purple); box-shadow: var(--glow); }
+
+        /* Range Slider */
+        input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; cursor: pointer; background: var(--bg-input); border-radius: 3px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            height: 18px; width: 18px; border-radius: 50%; background: var(--accent-cyan);
+            cursor: pointer; -webkit-appearance: none; margin-top: -6px; box-shadow: 0 0 10px rgba(0,240,255,0.5);
+        }
+
+        /* Color Buttons Grid */
+        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .color-swatch {
+            aspect-ratio: 1; border-radius: 4px; cursor: pointer; border: 2px solid transparent;
+            transition: transform 0.1s;
+        }
+        .color-swatch:hover { transform: scale(1.1); }
+        .color-swatch.active { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+        /* Tools Grid */
+        .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .tool-btn {
+            background-color: var(--bg-input); border: 1px solid var(--border);
+            color: var(--text-muted); padding: 12px; border-radius: 6px; cursor: pointer;
+            font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .tool-btn:hover { border-color: var(--accent-purple); color: var(--text-main); }
+        .tool-btn.active { background-color: var(--accent-purple); color: #fff; border-color: var(--accent-purple); box-shadow: var(--glow); }
+
+        /* Action Buttons */
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 6px;
+            font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.85rem;
+            transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--accent-purple), var(--accent-magenta)); color: #fff; }
+        .btn-primary:hover { box-shadow: var(--glow); filter: brightness(1.1); }
+        .btn-secondary { background-color: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--accent-green); color: var(--accent-green); }
+        .btn-danger { background-color: rgba(255, 0, 85, 0.1); color: var(--accent-magenta); border: 1px solid var(--accent-magenta); }
+        .btn-danger:hover { background-color: var(--accent-magenta); color: #fff; }
+
+        /* Mobile Adjustments (Android optimization) */
+        @media (max-width: 768px) {
+            header { padding: 10px; }
+            main { flex-direction: column-reverse; } /* Move tools to bottom */
+            #toolbar { 
+                width: 100%; height: auto; border-right: none; border-top: 1px solid var(--border);
+                flex-direction: row; overflow-x: auto; overflow-y: hidden;
+                padding: 10px; position: fixed; bottom: 0; left: 0; z-index: 800;
+                transform: translateY(100%); /* Start hidden */
+            }
+            #toolbar.visible { transform: translateY(0); }
+            #toolbar > * { flex-shrink: 0; width: 250px; } /* Cards in row on mobile */
+            
+            #props-panel { display: none; } /* Hide right panel on small screens for simplicity */
+            #canvas-viewport { padding-bottom: 100px; } /* Space for toolbar */
+            
+            .hero-title { font-size: 2rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="landing-page">
+        <div class="hero-logo"></div>
+        <h1 class="hero-title">RetroPix Pro</h1>
+        <p class="hero-subtitle">The ultimate procedural 8-bit asset studio. Generate, edit, and export pixel-perfect sprites directly in your browser.</p>
+        <button class="launch-btn" id="launchBtn">Initialize Studio</button>
+    </div>
+
+    <div id="app-shell">
+        <header>
+            <a href="#" class="brand">
+                <img src="https://iili.io/CmZg6cx.md.png" alt="Logo" class="brand-logo">
+                <span class="brand-name">RETROPIX PRO</span>
+            </a>
+            <a href="https://x.com/BasedElwyn" target="_blank" class="builder-link">Built by BasedElwyn</a>
+        </header>
+
+        <main>
+            <div id="toolbar">
+                
+                <div class="control-card">
+                    <h3 class="panel-title">Procedural Generator</h3>
+                    <div class="control-group">
+                        <label class="control-label">Symmetry</label>
+                        <select id="genSymmetry">
+                            <option value="horizontal" selected>Horizontal Mirror</option>
+                            <option value="vertical">Vertical Mirror</option>
+                            <option value="quad">Quad Mirror</option>
+                            <option value="none">None (Chaos)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Density <span class="label-val" id="densityVal">45%</span></label>
+                        <input type="range" id="genDensity" min="10" max="90" value="45">
+                    </div>
+                    <button class="btn btn-primary" style="margin-top: 8px;" id="generateBtn">
+                        <i>✦</i> Generate Random
+                    </button>
+                </div>
+
+                <div class="control-card">
+                    <h3 class="panel-title">Active Palette</h3>
+                    <div class="control-group">
+                        <select id="paletteSelect">
+                            <option value="cyberpunk">Cyberpunk Neon</option>
+                            <option value="matrix">Matrix Code</option>
+                            <option value="synthwave">Synthwave Sunset</option>
+                            <option value="gb">Gameboy Classic</option>
+                            <option value="pico8">PICO-8 Official</option>
+                        </select>
+                    </div>
+                    <div class="palette-grid" id="paletteDisplay">
+                        </div>
+                </div>
+                
+                 <div class="control-card mobile-only" style="display:none;">
+                    <h3 class="panel-title">Actions</h3>
+                    <div class="btn-group" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <button class="btn btn-secondary" id="mobileDownload">Export</button>
+                        <button class="btn btn-danger" id="mobileClear">Clear</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="canvas-viewport">
+                <canvas id="mainCanvas" width="512" height="512"></canvas>
+            </div>
+
+            <div id="props-panel">
+                <h3 class="panel-title">Canvas Properties</h3>
+                <div class="control-group">
+                    <label class="control-label">Resolution <span class="label-val">512px</span></label>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">Grid Size (PX)</label>
+                    <select id="gridSizeSelect">
+                        <option value="8">8 x 8</option>
+                        <option value="12">12 x 12</option>
+                        <option value="16" selected>16 x 16</option>
+                        <option value="24">24 x 24</option>
+                        <option value="32">32 x 32</option>
+                    </select>
+                </div>
+                
+                <h3 class="panel-title" style="margin-top:20px;">Manual Editor Tools</h3>
+                <div class="tools-grid">
+                    <button class="tool-btn active" data-tool="pencil" title="Pencil (Draw)">✎</button>
+                    <button class="tool-btn" data-tool="eraser" title="Eraser">◤</button>
+                    <button class="tool-btn" data-tool="fill" title="Bucket Fill">🪣</button>
+                </div>
+
+                <div style="margin-top: auto; display:flex; flex-direction:column; gap:10px;">
+                    <button class="btn btn-secondary" id="downloadBtn">Export PNG</button>
+                    <button class="btn btn-danger" id="clearBtn">Reset Canvas</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // === CORE STATE & CONFIG ===
+        const state = {
+            res: 512, // Internal resolution
+            grid: 16,  // Logic pixels
+            pixelSize: 0, // Computed res / grid
+            palette: [],
+            bgColor: '',
+            primaryColor: '',
+            secondaryColor: '',
+            activeTool: 'pencil',
+            currentSymmetry: 'horizontal',
+            density: 0.45,
+            isDrawing: false,
+            // Logic grid to store data (advanced feature for fill tool/stability)
+            gridData: [] 
+        };
+
+        const PALETTES = {
+            cyberpunk: { bg: '#050509', colors: ['#00f0ff', '#7000ff', '#ff0055', '#39ff14', '#fff'] },
+            matrix: { bg: '#030805', colors: ['#00ff66', '#009933', '#ccffcc', '#003311', '#004d00'] },
+            synthwave: { bg: '#1a0022', colors: ['#ff7700', '#ff007f', '#9900ff', '#00ffff', '#ffee00'] },
+            gb: { bg: '#9bbc0f', colors: ['#0f380f', '#306230', '#8bac0f', '#0f380f', '#306230'] },
+            pico8: { bg: '#000000', colors: ['#1D2B53','#7E2553','#008751','#AB5236','#5F574F','#C2C3C7','#FFF1E8','#FF004D','#FFA300','#FFEC27','#00E436','#29ADFF','#83769C','#FF77A8','#FFCCAA'] }
+        };
+
+        // === DOM ELEMENTS ===
+        const ui = {
+            landing: document.getElementById('landing-page'),
+            app: document.getElementById('app-shell'),
+            launch: document.getElementById('launchBtn'),
+            toolbar: document.getElementById('toolbar'),
+            canvas: document.getElementById('mainCanvas'),
+            ctx: document.getElementById('mainCanvas').getContext('2d', {alpha: false}), // Performance optimization
+            
+            // Controls
+            genDensity: document.getElementById('genDensity'),
+            densityVal: document.getElementById('densityVal'),
+            genSym: document.getElementById('genSymmetry'),
+            paletteSel: document.getElementById('paletteSelect'),
+            paletteDisp: document.getElementById('paletteDisplay'),
+            gridSel: document.getElementById('gridSizeSelect'),
+            genBtn: document.getElementById('generateBtn'),
+            tools: document.querySelectorAll('.tool-btn'),
+            
+            download: document.getElementById('downloadBtn'),
+            clear: document.getElementById('clearBtn'),
+            
+            // Mobile unique action handler
+            mobActions: document.querySelector('.mobile-only'),
+            mobDL: document.getElementById('mobileDownload'),
+            mobClr: document.getElementById('mobileClear')
+        };
+
+        // === INITIALIZATION ===
+        function init() {
+            // Handle Mobile Layout
+            if (window.innerWidth <= 768) {
+                ui.mobActions.style.display = 'block';
+            }
+
+            setupEventListeners();
+            updatePaletteUI();
+            updateConfig();
+            
+            // Inject Logo as Favicon (Just in case link tag fails)
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.getElementsByTagName('head')[0].appendChild(link);
+            }
+            link.href = 'https://iili.io/CmZg6cx.md.png';
+        }
+
+        function updateConfig() {
+            state.grid = parseInt(ui.gridSel.value);
+            state.pixelSize = state.res / state.grid;
+            state.density = parseInt(ui.genDensity.value) / 100;
+            state.currentSymmetry = ui.genSym.value;
+            
+            const p = PALETTES[ui.paletteSel.value];
+            state.palette = p.colors;
+            state.bgColor = p.bg;
+            
+            // Auto-select primary color if not set
+            if(!state.primaryColor || !state.palette.includes(state.primaryColor)) {
+                state.primaryColor = state.palette[0];
+            }
+
+            // Init Grid Data Structure (Full Advanced Logic)
+            state.gridData = Array(state.grid).fill().map(() => Array(state.grid).fill(null));
+        }
+
+        function setupEventListeners() {
+            // 1. Landing to App Transition
+            ui.launch.addEventListener('click', () => {
+                ui.landing.classList.add('hidden');
+                ui.app.classList.add('visible');
+                ui.toolbar.classList.add('visible');
+                
+                // Allow CSS transitions to finish then generate
+                setTimeout(() => {
+                    generateProcedural();
+                }, 800);
+            });
+
+            // 2. Control Updates
+            ui.genDensity.addEventListener('input', (e) => {
+                ui.densityVal.textContent = e.target.value + '%';
+                state.density = e.target.value / 100;
+            });
+            ui.genSym.addEventListener('change', (e) => state.currentSymmetry = e.target.value);
+            ui.gridSel.addEventListener('change', () => { updateConfig(); clearCanvas(); });
+            ui.paletteSel.addEventListener('change', () => { updateConfig(); updatePaletteUI(); generateProcedural(); });
+            
+            // 3. Actions
+            ui.genBtn.addEventListener('click', generateProcedural);
+            ui.clear.addEventListener('click', clearCanvas);
+            ui.download.addEventListener('click', downloadCanvas);
+            
+            // Mobile Specific Actions
+            ui.mobDL.addEventListener('click', downloadCanvas);
+            ui.mobClr.addEventListener('click', clearCanvas);
+
+            // 4. Tool Selection
+            ui.tools.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelector('.tool-btn.active').classList.remove('active');
+                    btn.classList.add('active');
+                    state.activeTool = btn.dataset.tool;
+                });
+            });
+
+            // 5. MANUAL DRAWING LOGIC (Mouse & Touch Native Support)
+            setupDrawingChain();
+        }
+
+        // === PALETTE ENGINE ===
+        function updatePaletteUI() {
+            ui.paletteDisp.innerHTML = '';
+            state.palette.forEach((color, i) => {
+                const swatch = document.createElement('div');
+                swatch.className = `color-swatch ${color === state.primaryColor ? 'active' : ''}`;
+                swatch.style.backgroundColor = color;
+                swatch.addEventListener('click', () => {
+                    document.querySelector('.color-swatch.active')?.classList.remove('active');
+                    swatch.classList.add('active');
+                    state.primaryColor = color;
+                });
+                ui.paletteDisp.appendChild(swatch);
+            });
+        }
+
+        // === RENDER ENGINE ===
+        function drawPixel(x, y, color, updateLogic = true) {
+            if (x < 0 || x >= state.grid || y < 0 || y >= state.grid) return;
+
+            // Set visual
+            ui.ctx.fillStyle = color === null ? state.bgColor : color;
+            // Add tiny overlap to prevent grid lines due to floating point math
+            ui.ctx.fillRect(
+                Math.floor(x * state.pixelSize), 
+                Math.floor(y * state.pixelSize), 
+                Math.ceil(state.pixelSize), 
+                Math.ceil(state.pixelSize)
+            );
+
+            // Set logical
+            if (updateLogic) {
+                state.gridData[x][y] = color;
+            }
+        }
+
+        function clearCanvas() {
+            ui.ctx.fillStyle = state.bgColor;
+            ui.ctx.fillRect(0, 0, state.res, state.res);
+            // Reset logic
+            state.gridData = Array(state.grid).fill().map(() => Array(state.grid).fill(null));
+        }
+
+        // === PROCEDURAL GENERATOR (Advanced Symmetry) ===
+        function generateProcedural() {
+            clearCanvas();
+            const g = state.grid;
+            const sym = state.currentSymmetry;
+            
+            // Pick two distinct colors from palette for variety
+            const pColor = state.primaryColor;
+            const sColor = state.palette[Math.floor(Math.random() * state.palette.length)];
+
+            // Define bounds based on symmetry
+            let xBound = g;
+            let yBound = g;
+            if (sym === 'horizontal' || sym === 'quad') xBound = Math.ceil(g / 2);
+            if (sym === 'vertical' || sym === 'quad') yBound = Math.ceil(g / 2);
+
+            for (let x = 0; x < xBound; x++) {
+                for (let y = 0; y < yBound; y++) {
+                    if (Math.random() < state.density) {
+                        const color = Math.random() > 0.3 ? pColor : sColor;
+                        
+                        // Apply symmetry logic
+                        drawPixel(x, y, color); // Master Pixel
+
+                        if (sym === 'horizontal' || sym === 'quad') {
+                            drawPixel(g - 1 - x, y, color); // Mirror X
+                        }
+                        if (sym === 'vertical' || sym === 'quad') {
+                            drawPixel(x, g - 1 - y, color); // Mirror Y
+                        }
+                        if (sym === 'quad') {
+                            drawPixel(g - 1 - x, g - 1 - y, color); // Mirror XY
+                        }
+                    }
+                }
+            }
+        }
+
+        // === MANUAL DRAWING CORE (Advanced Input Handling) ===
+        function setupDrawingChain() {
+            // Helper to get grid coords from any event
+            function getCoords(e) {
+                const rect = ui.canvas.getBoundingClientRect();
+                // Handle both touch and mouse
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                const scaleX = ui.canvas.width / rect.width;
+                const scaleY = ui.canvas.height / rect.height;
+
+                const canvasX = (clientX - rect.left) * scaleX;
+                const canvasY = (clientY - rect.top) * scaleY;
+
+                return {
+                    x: Math.floor(canvasX / state.pixelSize),
+                    y: Math.floor(canvasY / state.pixelSize)
+                };
+            }
+
+            function handleStart(e) {
+                // Prevent scrolling on touch
+                if (e.touches) e.preventDefault();
+                
+                state.isDrawing = true;
+                const coords = getCoords(e);
+                
+                if (state.activeTool === 'fill') {
+                    floodFill(coords.x, coords.y, state.primaryColor);
+                    state.isDrawing = false; // Fill is single action
+                } else {
+                    executeDraw(coords.x, coords.y);
+                }
+            }
+
+            function handleMove(e) {
+                if (!state.isDrawing || state.activeTool === 'fill') return;
+                if (e.touches) e.preventDefault(); // Prevent scroll while drawing
+                
+                const coords = getCoords(e);
+                executeDraw(coords.x, coords.y);
+            }
+
+            function handleEnd() { state.isDrawing = false; }
+
+            function executeDraw(x, y) {
+                const color = state.activeTool === 'pencil' ? state.primaryColor : null; // null is eraser
+                drawPixel(x, y, color);
+            }
+
+            // Mouse Events
+            ui.canvas.addEventListener('mousedown', handleStart);
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('mouseup', handleEnd);
+
+            // Touch Events (Android native support)
+            ui.canvas.addEventListener('touchstart', handleStart, { passive: false });
+            ui.canvas.addEventListener('touchmove', handleMove, { passive: false });
+            ui.canvas.addEventListener('touchend', handleEnd);
+        }
+
+        // === FLOOD FILL ALGORITHM (Advanced Recursive-style logic) ===
+        function floodFill(startX, startY, fillColor) {
+            const g = state.grid;
+            if (startX < 0 || startX >= g || startY < 0 || startY >= g) return;
+            
+            const targetColor = state.gridData[startX][startY];
+            if (targetColor === fillColor) return; // Already filled
+
+            const pixelsToCheck = [[startX, startY]];
+            const colorToCompare = targetColor;
+
+            // Iterative approach to avoid call stack overflow on large grids
+            while (pixelsToCheck.length > 0) {
+                const [x, y] = pixelsToCheck.pop();
+
+                if (x >= 0 && x < g && y >= 0 && y < g && state.gridData[x][y] === colorToCompare) {
+                    drawPixel(x, y, fillColor); // Draws and updates logic
+
+                    // Check neighbors
+                    pixelsToCheck.push([x + 1, y]);
+                    pixelsToCheck.push([x - 1, y]);
+                    pixelsToCheck.push([x, y + 1]);
+                    pixelsToCheck.push([x, y - 1]);
+                }
+            }
+        }
+
+        // === EXPORT ===
+        function downloadCanvas() {
+            // Add slight glow effect just before export for style
+            ui.ctx.shadowColor = state.primaryColor;
+            ui.ctx.shadowBlur = 10;
+            // Redraw current state with glow (complex procedure to redraw from logic)
+            redrawFromLogic();
+            ui.ctx.shadowBlur = 0; // Reset
+
+            const link = document.createElement('a');
+            link.download = `RetroPix_${Date.now()}.png`;
+            link.href = ui.canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function redrawFromLogic() {
+            const currentData = JSON.parse(JSON.stringify(state.gridData));
+            clearCanvas(); // visual clear
+            for (let x = 0; x < state.grid; x++) {
+                for (let y = 0; y < state.grid; y++) {
+                    if (currentData[x][y] !== null) {
+                        drawPixel(x, y, currentData[x][y], true);
+                    }
+                }
+            }
+        }
+
+        // RUN STUDIO
+        init();
+
+    </script>
+</body>
+</html>
