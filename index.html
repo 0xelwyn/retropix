@@ -1,764 +1,353 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RetroPix Pro • Procedural Pixel Studio</title>
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="https://iili.io/CmZg6cx.md.png">
-    
-    <style>
-        :root {
-            --bg-deep: #050509;
-            --bg-card: #0d0f17;
-            --bg-input: #161925;
-            --text-main: #f0f6fc;
-            --text-muted: #8b949e;
-            --accent-cyan: #00f0ff;
-            --accent-purple: #7000ff;
-            --accent-magenta: #ff0055;
-            --accent-green: #39ff14;
-            --border: #2b3042;
-            --glow: 0 0 15px rgba(112, 0, 255, 0.5);
-            --ease: cubic-bezier(0.23, 1, 0.32, 1);
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- Orynth Ownership Verification Tag -->
+  <meta name="ory-verify" content="orynth-c7aace79913648eb858b28a0e017958b">
+  
+  <title>RetroPix Pro — 8-Bit Pixel Art & Sprite Studio</title>
+  
+  <style>
+    :root {
+      --bg-color: #0d0f17;
+      --panel-bg: #161925;
+      --accent-cyan: #00f0ff;
+      --accent-pink: #ff0055;
+      --accent-green: #39ff14;
+      --text-main: #e2e8f0;
+      --border-color: #2a2e45;
+    }
 
-        /* --- Reset & Base --- */
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
-        html { scroll-behavior: smooth; }
-        body {
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
 
-        /* --- Custom Scrollbar --- */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-deep); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-purple); }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+    }
 
-        /* =========================================
-           SECTION 1: ADVANCED LANDING PAGE
-           ========================================= */
-        #landing-page {
-            position: relative; width: 100%; min-height: 100vh;
-            background: radial-gradient(circle at 50% 20%, #1a1a2e 0%, var(--bg-deep) 70%);
-            display: flex; flex-direction: column; align-items: center;
-            z-index: 1000; transition: transform 0.8s var(--ease), opacity 0.8s var(--ease);
-            padding-bottom: 60px;
-        }
+    header {
+      text-align: center;
+      margin-bottom: 15px;
+    }
 
-        #landing-page.hidden {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-            transform: translateY(-100%); opacity: 0; pointer-events: none;
-        }
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--accent-cyan);
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+      letter-spacing: 2px;
+    }
 
-        /* Grid Effect */
-        .landing-bg-grid {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 40px 40px; opacity: 0.12;
-            pointer-events: none;
-        }
+    header p {
+      font-size: 0.85rem;
+      color: var(--accent-pink);
+    }
 
-        /* Landing Navbar */
-        .landing-nav {
-            width: 100%; max-width: 1100px; padding: 20px 24px;
-            display: flex; justify-content: space-between; align-items: center;
-            position: relative; z-index: 10;
-        }
-        .landing-nav-brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.2rem; color: var(--accent-cyan); }
-        .landing-nav-brand img { width: 36px; height: 36px; image-rendering: pixelated; }
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+      max-width: 500px;
+    }
 
-        /* Hero Section */
-        .hero {
-            display: flex; flex-direction: column; align-items: center; text-align: center;
-            padding: 60px 20px 40px; max-width: 800px; position: relative; z-index: 10;
-        }
+    .canvas-wrapper {
+      position: relative;
+      background-color: #000;
+      border: 3px solid var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+      border-radius: 6px;
+      padding: 5px;
+    }
 
-        .hero-logo-box {
-            position: relative; margin-bottom: 24px;
-        }
-        .hero-logo {
-            width: 110px; height: 110px;
-            background-image: url('https://iili.io/CmZg6cx.md.png');
-            background-size: cover; background-position: center;
-            image-rendering: pixelated;
-            filter: drop-shadow(0 0 15px var(--accent-purple));
-            animation: pulse 3s infinite alternate ease-in-out;
-        }
-        @keyframes pulse { 0% { transform: scale(1); filter: drop-shadow(0 0 15px var(--accent-purple)); } 100% { transform: scale(1.05); filter: drop-shadow(0 0 25px var(--accent-cyan)); } }
+    canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      display: block;
+      cursor: crosshair;
+      background-color: #111;
+    }
 
-        .hero-title {
-            font-size: 3.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 3px;
-            background: linear-gradient(135deg, var(--accent-cyan), #fff 50%, var(--accent-magenta));
-            -webkit-background-clip: text; color: transparent;
-            margin-bottom: 16px; line-height: 1.1;
-        }
+    .controls-panel {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 15px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-        .hero-subtitle {
-            font-size: 1.1rem; color: var(--text-muted); max-width: 620px; margin-bottom: 36px;
-            line-height: 1.6;
-        }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
 
-        .launch-btn {
-            position: relative; z-index: 10;
-            padding: 16px 42px; font-size: 1.05rem; font-weight: 800; text-transform: uppercase;
-            color: #fff; background: linear-gradient(135deg, var(--accent-purple), var(--accent-magenta));
-            border: none; border-radius: 6px; cursor: pointer; overflow: hidden;
-            transition: all 0.3s var(--ease); box-shadow: var(--glow);
-            letter-spacing: 1px;
-        }
+    label {
+      font-size: 0.8rem;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      font-weight: bold;
+    }
 
-        .launch-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
-            filter: brightness(1.15);
-        }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
 
-        /* Section Container */
-        .landing-section {
-            width: 100%; max-width: 1000px; padding: 60px 24px 20px;
-            position: relative; z-index: 10;
-        }
+    button {
+      background: #1f2438;
+      color: var(--text-main);
+      border: 1px solid var(--accent-cyan);
+      padding: 10px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
 
-        .section-header {
-            text-align: center; margin-bottom: 40px;
-        }
-        .section-tag {
-            font-size: 0.75rem; text-transform: uppercase; color: var(--accent-cyan);
-            letter-spacing: 2px; font-weight: bold; margin-bottom: 8px; display: block;
-        }
-        .section-title {
-            font-size: 2rem; font-weight: 800; color: var(--text-main);
-        }
+    button:hover, button:active {
+      background: var(--accent-cyan);
+      color: #000;
+      box-shadow: 0 0 8px var(--accent-cyan);
+    }
 
-        /* How It Works (3 Steps) */
-        .steps-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;
-        }
-        .step-card {
-            background-color: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 28px; position: relative;
-            transition: border-color 0.3s, transform 0.3s;
-        }
-        .step-card:hover { border-color: var(--accent-purple); transform: translateY(-4px); }
-        .step-num {
-            font-size: 2.5rem; font-weight: 900; color: rgba(255, 255, 255, 0.08);
-            position: absolute; top: 15px; right: 20px; line-height: 1;
-        }
-        .step-icon {
-            font-size: 1.8rem; margin-bottom: 16px; color: var(--accent-cyan); display: inline-block;
-        }
-        .step-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
-        .step-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
+    button.btn-pink {
+      border-color: var(--accent-pink);
+    }
 
-        /* FAQ Accordion */
-        .faq-list { display: flex; flex-direction: column; gap: 14px; max-width: 800px; margin: 0 auto; }
-        .faq-item {
-            background-color: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 8px; overflow: hidden; transition: border-color 0.2s;
-        }
-        .faq-item.active { border-color: var(--accent-cyan); }
-        .faq-question {
-            padding: 18px 20px; font-weight: 600; font-size: 1rem; cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
-            user-select: none; color: var(--text-main);
-        }
-        .faq-question::after { content: '+'; font-size: 1.4rem; color: var(--accent-cyan); transition: transform 0.3s; }
-        .faq-item.active .faq-question::after { transform: rotate(45deg); color: var(--accent-magenta); }
-        .faq-answer {
-            max-height: 0; overflow: hidden; transition: max-height 0.3s var(--ease), padding 0.3s var(--ease);
-            padding: 0 20px; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;
-        }
-        .faq-item.active .faq-answer { max-height: 200px; padding: 0 20px 18px; }
+    button.btn-pink:hover, button.btn-pink:active {
+      background: var(--accent-pink);
+      color: #fff;
+      box-shadow: 0 0 8px var(--accent-pink);
+    }
 
-        /* Landing Footer */
-        .landing-footer {
-            margin-top: 60px; text-align: center; color: var(--text-muted); font-size: 0.85rem;
-            border-top: 1px solid var(--border); width: 100%; max-width: 1000px; padding-top: 30px;
-        }
-        .landing-footer a { color: var(--accent-cyan); text-decoration: none; font-weight: 600; }
-        .landing-footer a:hover { text-decoration: underline; }
+    button.btn-green {
+      border-color: var(--accent-green);
+    }
 
-        /* =========================================
-           SECTION 2: APP STUDIO SHELL
-           ========================================= */
-        #app-shell {
-            display: none; flex-direction: column; height: 100vh; width: 100vw;
-            opacity: 0; transition: opacity 0.5s var(--ease); position: fixed; top: 0; left: 0; z-index: 500;
-        }
-        #app-shell.active-app { display: flex; opacity: 1; }
+    button.btn-green:hover, button.btn-green:active {
+      background: var(--accent-green);
+      color: #000;
+      box-shadow: 0 0 8px var(--accent-green);
+    }
 
-        header {
-            background-color: var(--bg-card); border-bottom: 1px solid var(--border);
-            padding: 10px 20px; display: flex; align-items: center; justify-content: space-between;
-            position: relative; z-index: 900;
-        }
+    .palette-container {
+      display: flex;
+      gap: 6px;
+      justify-content: space-between;
+      margin-top: 5px;
+    }
 
-        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .brand-logo { width: 30px; height: 30px; image-rendering: pixelated; }
-        .brand-name { font-weight: 800; color: var(--accent-cyan); letter-spacing: 1px; font-size: 1rem; }
+    .color-swatch {
+      width: 100%;
+      height: 32px;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
 
-        .builder-link {
-            font-size: 0.8rem; color: var(--text-muted); text-decoration: none;
-            transition: color 0.2s; border-bottom: 1px solid transparent;
-        }
-        .builder-link:hover { color: var(--accent-magenta); border-color: var(--accent-magenta); }
+    .color-swatch.active {
+      border-color: #fff;
+      transform: scale(1.05);
+      box-shadow: 0 0 5px #fff;
+    }
 
-        /* Main Workspace */
-        main { flex: 1; display: flex; overflow: hidden; position: relative; }
-
-        /* Side Toolbar (Kiri) */
-        #toolbar {
-            width: 260px; background-color: var(--bg-card); border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; padding: 15px; gap: 15px;
-            overflow-y: auto; z-index: 10;
-        }
-
-        /* Canvas Viewport (Tengah) */
-        #canvas-viewport {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            background-image: 
-                linear-gradient(45deg, #090a0f 25%, transparent 25%), 
-                linear-gradient(-45deg, #090a0f 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #090a0f 75%),
-                linear-gradient(-45deg, transparent 75%, #090a0f 75%);
-            background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            overflow: hidden; position: relative; padding: 20px;
-        }
-
-        #mainCanvas {
-            image-rendering: pixelated;
-            box-shadow: 0 0 40px rgba(0,0,0,0.8);
-            max-width: 100%; max-height: 100%;
-            background-color: transparent;
-        }
-
-        /* Right Panel */
-        #props-panel {
-            width: 280px; background-color: var(--bg-card); border-left: 1px solid var(--border);
-            display: flex; flex-direction: column; padding: 15px; gap: 15px;
-            overflow-y: auto; z-index: 10;
-        }
-
-        /* --- UI Components --- */
-        .panel-title {
-            font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);
-            letter-spacing: 2px; margin-bottom: 5px; border-bottom: 1px solid var(--border);
-            padding-bottom: 5px; font-weight: 700;
-        }
-
-        .control-group { display: flex; flex-direction: column; gap: 6px; }
-        .control-label { font-size: 0.85rem; color: #b0b8c4; display: flex; justify-content: space-between; }
-        .label-val { color: var(--accent-cyan); font-family: monospace; }
-
-        select, input[type="number"], input[type="text"] {
-            background-color: var(--bg-input); color: var(--text-main);
-            border: 1px solid var(--border); padding: 9px 12px; border-radius: 6px;
-            font-size: 0.88rem; width: 100%;
-        }
-        select:focus, input:focus { border-color: var(--accent-purple); box-shadow: var(--glow); }
-
-        input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type="range"]::-webkit-slider-runnable-track {
-            width: 100%; height: 6px; cursor: pointer; background: var(--bg-input); border-radius: 3px;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            height: 18px; width: 18px; border-radius: 50%; background: var(--accent-cyan);
-            cursor: pointer; -webkit-appearance: none; margin-top: -6px; box-shadow: 0 0 10px rgba(0,240,255,0.5);
-        }
-
-        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-        .color-swatch {
-            aspect-ratio: 1; border-radius: 4px; cursor: pointer; border: 2px solid transparent;
-            transition: transform 0.1s;
-        }
-        .color-swatch:hover { transform: scale(1.1); }
-        .color-swatch.active { border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
-
-        .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .tool-btn {
-            background-color: var(--bg-input); border: 1px solid var(--border);
-            color: var(--text-muted); padding: 10px; border-radius: 6px; cursor: pointer;
-            font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s;
-        }
-        .tool-btn:hover { border-color: var(--accent-purple); color: var(--text-main); }
-        .tool-btn.active { background-color: var(--accent-purple); color: #fff; border-color: var(--accent-purple); box-shadow: var(--glow); }
-
-        .btn {
-            width: 100%; padding: 12px; border: none; border-radius: 6px;
-            font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.82rem;
-            transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
-            letter-spacing: 0.5px;
-        }
-        .btn-primary { background: linear-gradient(135deg, var(--accent-purple), var(--accent-magenta)); color: #fff; }
-        .btn-primary:hover { box-shadow: var(--glow); filter: brightness(1.1); }
-        .btn-secondary { background-color: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); }
-        .btn-secondary:hover { border-color: var(--accent-green); color: var(--accent-green); }
-        .btn-danger { background-color: rgba(255, 0, 85, 0.1); color: var(--accent-magenta); border: 1px solid var(--accent-magenta); }
-        .btn-danger:hover { background-color: var(--accent-magenta); color: #fff; }
-
-        /* Responsive Mobile Layout */
-        @media (max-width: 768px) {
-            .hero-title { font-size: 2.2rem; }
-            main { flex-direction: column-reverse; }
-            #toolbar { 
-                width: 100%; height: auto; border-right: none; border-top: 1px solid var(--border);
-                flex-direction: row; overflow-x: auto; overflow-y: hidden; padding: 12px;
-                position: fixed; bottom: 0; left: 0; z-index: 800;
-            }
-            #toolbar > * { flex-shrink: 0; width: 230px; }
-            #props-panel { display: none; }
-            #canvas-viewport { padding-bottom: 120px; }
-        }
-    </style>
+    footer {
+      margin-top: 20px;
+      font-size: 0.75rem;
+      color: #666;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- =========================================
-         1. ENHANCED LANDING PAGE
-         ========================================= -->
-    <div id="landing-page">
-        <div class="landing-bg-grid"></div>
+  <header>
+    <h1>RETROPIX PRO</h1>
+    <p>8-BIT PROCEDURAL SPRITE STUDIO</p>
+  </header>
 
-        <nav class="landing-nav">
-            <div class="landing-nav-brand">
-                <img src="https://iili.io/CmZg6cx.md.png" alt="RetroPix Logo">
-                RETROPIX
-            </div>
-            <a href="https://x.com/BasedElwyn" target="_blank" class="builder-link">@BasedElwyn</a>
-        </nav>
-
-        <header class="hero">
-            <div class="hero-logo-box">
-                <div class="hero-logo"></div>
-            </div>
-            <h1 class="hero-title">Procedural Pixel Studio</h1>
-            <p class="hero-subtitle">Create 8-bit characters, monster avatars, and game assets instantly using procedural generation algorithms and custom retro palettes.</p>
-            <button class="launch-btn" id="launchBtn">Launch Studio App ➔</button>
-        </header>
-
-        <!-- HOW IT WORKS SECTION -->
-        <section class="landing-section">
-            <div class="section-header">
-                <span class="section-tag">Workflow</span>
-                <h2 class="section-title">How It Works</h2>
-            </div>
-            <div class="steps-grid">
-                <div class="step-card">
-                    <span class="step-num">01</span>
-                    <div class="step-icon">⚡</div>
-                    <h3 class="step-title">1. Generate & Randomize</h3>
-                    <p class="step-desc">Select grid density and symmetry mode (Horizontal, Quad, or Vertical), then hit Randomize to instantly produce unique 8-bit sprites.</p>
-                </div>
-                <div class="step-card">
-                    <span class="step-num">02</span>
-                    <div class="step-icon">🎨</div>
-                    <h3 class="step-title">2. Edit & Style</h3>
-                    <p class="step-desc">Fine-tune pixels using the built-in pencil, eraser, and bucket fill tools. Switch between Cyberpunk, Synthwave, and Gameboy palettes seamlessly.</p>
-                </div>
-                <div class="step-card">
-                    <span class="step-num">03</span>
-                    <div class="step-icon">💾</div>
-                    <h3 class="step-title">3. Export PNG</h3>
-                    <p class="step-desc">Export high-resolution transparent PNG files directly to your device with zero quality loss—perfect for game dev or social avatars.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- FAQ SECTION -->
-        <section class="landing-section">
-            <div class="section-header">
-                <span class="section-tag">Questions</span>
-                <h2 class="section-title">Frequently Asked Questions</h2>
-            </div>
-            <div class="faq-list">
-                <div class="faq-item">
-                    <div class="faq-question">What is RetroPix Pro?</div>
-                    <div class="faq-answer">RetroPix Pro is a web-based procedural pixel art generator designed for game developers, artists, and retro aesthetics enthusiasts to generate 8-bit sprites instantly inside the browser.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">Are the generated assets free for commercial use?</div>
-                    <div class="faq-answer">Yes! All assets generated using RetroPix are 100% royalty-free. You can freely use them in commercial game projects, NFTs, social media avatars, or personal artwork.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">Does it run on mobile devices?</div>
-                    <div class="faq-answer">Absolutely. RetroPix Pro includes native touch control support specifically optimized for Android and mobile web browsers.</div>
-                </div>
-            </div>
-        </section>
-
-        <footer class="landing-footer">
-            <p>Built with precision by <a href="https://x.com/BasedElwyn" target="_blank">BasedElwyn</a> • Powered by HTML5 Canvas</p>
-        </footer>
+  <div class="app-container">
+    <div class="canvas-wrapper">
+      <canvas id="pixelCanvas" width="320" height="320"></canvas>
     </div>
 
-    <!-- =========================================
-         2. MAIN APP STUDIO SHELL
-         ========================================= -->
-    <div id="app-shell">
-        <header>
-            <a href="#" class="brand" id="backToLanding">
-                <img src="https://iili.io/CmZg6cx.md.png" alt="Logo" class="brand-logo">
-                <span class="brand-name">RETROPIX PRO</span>
-            </a>
-            <a href="https://x.com/BasedElwyn" target="_blank" class="builder-link">Built by BasedElwyn</a>
-        </header>
+    <div class="controls-panel">
+      <div class="control-group">
+        <label>Palette Selection</label>
+        <div class="palette-container" id="palette">
+          <div class="color-swatch active" style="background-color: #00f0ff;" data-color="#00f0ff"></div>
+          <div class="color-swatch" style="background-color: #ff0055;" data-color="#ff0055"></div>
+          <div class="color-swatch" style="background-color: #39ff14;" data-color="#39ff14"></div>
+          <div class="color-swatch" style="background-color: #ffbe0b;" data-color="#ffbe0b"></div>
+          <div class="color-swatch" style="background-color: #ffffff;" data-color="#ffffff"></div>
+          <div class="color-swatch" style="background-color: #000000;" data-color="#000000"></div>
+        </div>
+      </div>
 
-        <main>
-            <!-- Left Toolbar -->
-            <div id="toolbar">
-                <div class="control-card">
-                    <h3 class="panel-title">Procedural Generator</h3>
-                    <div class="control-group">
-                        <label class="control-label">Symmetry</label>
-                        <select id="genSymmetry">
-                            <option value="horizontal" selected>Horizontal Mirror</option>
-                            <option value="vertical">Vertical Mirror</option>
-                            <option value="quad">Quad Mirror</option>
-                            <option value="none">None (Random)</option>
-                        </select>
-                    </div>
-                    <div class="control-group" style="margin-top: 8px;">
-                        <label class="control-label">Density <span class="label-val" id="densityVal">45%</span></label>
-                        <input type="range" id="genDensity" min="10" max="90" value="45">
-                    </div>
-                    <button class="btn btn-primary" style="margin-top: 10px;" id="generateBtn">
-                        ✦ Randomize
-                    </button>
-                </div>
-
-                <div class="control-card">
-                    <h3 class="panel-title">Palette Picker</h3>
-                    <div class="control-group">
-                        <select id="paletteSelect">
-                            <option value="cyberpunk">Cyberpunk Neon</option>
-                            <option value="matrix">Matrix Code</option>
-                            <option value="synthwave">Synthwave Sunset</option>
-                            <option value="gb">Gameboy Classic</option>
-                            <option value="pico8">PICO-8 Official</option>
-                        </select>
-                    </div>
-                    <div class="palette-grid" id="paletteDisplay" style="margin-top: 8px;"></div>
-                </div>
-                
-                <!-- Mobile Export Controls -->
-                <div class="control-card mobile-only" style="display:none;">
-                    <h3 class="panel-title">Actions</h3>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                        <button class="btn btn-secondary" id="mobileDownload">Export</button>
-                        <button class="btn btn-danger" id="mobileClear">Clear</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Viewport Canvas -->
-            <div id="canvas-viewport">
-                <canvas id="mainCanvas" width="512" height="512"></canvas>
-            </div>
-
-            <!-- Right Panel (Desktop) -->
-            <div id="props-panel">
-                <h3 class="panel-title">Canvas Settings</h3>
-                <div class="control-group">
-                    <label class="control-label">Grid Resolution</label>
-                    <select id="gridSizeSelect">
-                        <option value="8">8 x 8 (Simple)</option>
-                        <option value="12">12 x 12 (Classic)</option>
-                        <option value="16" selected>16 x 16 (Standard)</option>
-                        <option value="24">24 x 24 (Detailed)</option>
-                        <option value="32">32 x 32 (HD)</option>
-                    </select>
-                </div>
-                
-                <h3 class="panel-title" style="margin-top:16px;">Tools</h3>
-                <div class="tools-grid">
-                    <button class="tool-btn active" data-tool="pencil" title="Pencil">✎</button>
-                    <button class="tool-btn" data-tool="eraser" title="Eraser">◤</button>
-                    <button class="tool-btn" data-tool="fill" title="Bucket Fill">🪣</button>
-                </div>
-
-                <div style="margin-top: auto; display:flex; flex-direction:column; gap:10px;">
-                    <button class="btn btn-secondary" id="downloadBtn">Export PNG</button>
-                    <button class="btn btn-danger" id="clearBtn">Reset Canvas</button>
-                </div>
-            </div>
-        </main>
+      <div class="control-group">
+        <label>Actions</label>
+        <div class="btn-grid">
+          <button id="btnGenerate" class="btn-pink">⚡ GENERATE</button>
+          <button id="btnClear">🧹 CLEAR</button>
+          <button id="btnExport" class="btn-green">💾 EXPORT PNG</button>
+          <button id="btnSymmetry">🔄 SYMMETRY: ON</button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // === CORE STATE & PALETTES ===
-        const state = {
-            res: 512,
-            grid: 16,
-            pixelSize: 0,
-            palette: [],
-            bgColor: '',
-            primaryColor: '',
-            activeTool: 'pencil',
-            currentSymmetry: 'horizontal',
-            density: 0.45,
-            isDrawing: false,
-            gridData: []
-        };
+  <footer>
+    <p>Built by @BasedElwyn • Powered by Orynth</p>
+  </footer>
 
-        const PALETTES = {
-            cyberpunk: { bg: '#050509', colors: ['#00f0ff', '#7000ff', '#ff0055', '#39ff14', '#ffffff'] },
-            matrix: { bg: '#030805', colors: ['#00ff66', '#009933', '#ccffcc', '#003311', '#004d00'] },
-            synthwave: { bg: '#1a0022', colors: ['#ff7700', '#ff007f', '#9900ff', '#00ffff', '#ffee00'] },
-            gb: { bg: '#9bbc0f', colors: ['#0f380f', '#306230', '#8bac0f', '#0f380f', '#306230'] },
-            pico8: { bg: '#000000', colors: ['#1D2B53','#7E2553','#008751','#AB5236','#5F574F','#FFF1E8','#FF004D','#FFA300','#FFEC27','#00E436','#29ADFF','#FF77A8'] }
-        };
+  <script>
+    const canvas = document.getElementById('pixelCanvas');
+    const ctx = canvas.getContext('2d');
+    const gridSize = 16;
+    const pixelSize = canvas.width / gridSize;
+    let grid = Array(gridSize).fill().map(() => Array(gridSize).fill('#000000'));
+    let currentColor = '#00f0ff';
+    let isSymmetryEnabled = true;
+    let isDrawing = false;
 
-        const ui = {
-            landing: document.getElementById('landing-page'),
-            app: document.getElementById('app-shell'),
-            launch: document.getElementById('launchBtn'),
-            backToLanding: document.getElementById('backToLanding'),
-            canvas: document.getElementById('mainCanvas'),
-            ctx: document.getElementById('mainCanvas').getContext('2d', {alpha: false}),
-            
-            genDensity: document.getElementById('genDensity'),
-            densityVal: document.getElementById('densityVal'),
-            genSym: document.getElementById('genSymmetry'),
-            paletteSel: document.getElementById('paletteSelect'),
-            paletteDisp: document.getElementById('paletteDisplay'),
-            gridSel: document.getElementById('gridSizeSelect'),
-            genBtn: document.getElementById('generateBtn'),
-            tools: document.querySelectorAll('.tool-btn'),
-            
-            download: document.getElementById('downloadBtn'),
-            clear: document.getElementById('clearBtn'),
-            mobActions: document.querySelector('.mobile-only'),
-            mobDL: document.getElementById('mobileDownload'),
-            mobClr: document.getElementById('mobileClear')
-        };
+    // Initialize Canvas
+    function init() {
+      drawGrid();
+      setupEventListeners();
+    }
 
-        function init() {
-            if (window.innerWidth <= 768) {
-                ui.mobActions.style.display = 'block';
-            }
-
-            setupEventListeners();
-            setupFAQ();
-            updatePaletteUI();
-            updateConfig();
+    function renderCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let r = 0; r < gridSize; r++) {
+        for (let c = 0; c < gridSize; c++) {
+          ctx.fillStyle = grid[r][c];
+          ctx.fillRect(c * pixelSize, r * pixelSize, pixelSize, pixelSize);
         }
+      }
+      drawGridOverlay();
+    }
 
-        function updateConfig() {
-            state.grid = parseInt(ui.gridSel.value);
-            state.pixelSize = state.res / state.grid;
-            state.density = parseInt(ui.genDensity.value) / 100;
-            state.currentSymmetry = ui.genSym.value;
-            
-            const p = PALETTES[ui.paletteSel.value];
-            state.palette = p.colors;
-            state.bgColor = p.bg;
-            
-            if(!state.primaryColor || !state.palette.includes(state.primaryColor)) {
-                state.primaryColor = state.palette[0];
-            }
+    function drawGridOverlay() {
+      ctx.strokeStyle = '#2a2e45';
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= gridSize; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * pixelSize, 0);
+        ctx.lineTo(i * pixelSize, canvas.height);
+        ctx.stroke();
 
-            state.gridData = Array(state.grid).fill().map(() => Array(state.grid).fill(null));
+        ctx.beginPath();
+        ctx.moveTo(0, i * pixelSize);
+        ctx.lineTo(canvas.width, i * pixelSize);
+        ctx.stroke();
+      }
+    }
+
+    function setPixel(x, y, color) {
+      const col = Math.floor(x / pixelSize);
+      const row = Math.floor(y / pixelSize);
+      if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+        grid[row][col] = color;
+        if (isSymmetryEnabled) {
+          const mirrorCol = gridSize - 1 - col;
+          grid[row][mirrorCol] = color;
         }
+      }
+      renderCanvas();
+    }
 
-        function setupFAQ() {
-            document.querySelectorAll('.faq-question').forEach(q => {
-                q.addEventListener('click', () => {
-                    const item = q.parentElement;
-                    item.classList.toggle('active');
-                });
-            });
+    function generateProceduralSprite() {
+      const colors = ['#00f0ff', '#ff0055', '#39ff14', '#ffbe0b', '#000000'];
+      const primaryColor = colors[Math.floor(Math.random() * (colors.length - 1))];
+      
+      // Reset grid
+      grid = Array(gridSize).fill().map(() => Array(gridSize).fill('#000000'));
+
+      const halfGrid = Math.ceil(gridSize / 2);
+      for (let r = 2; r < gridSize - 2; r++) {
+        for (let c = 2; c < halfGrid; c++) {
+          if (Math.random() > 0.45) {
+            grid[r][c] = primaryColor;
+            grid[r][gridSize - 1 - c] = primaryColor;
+          }
         }
+      }
+      renderCanvas();
+    }
 
-        function setupEventListeners() {
-            // Switch to App Studio
-            ui.launch.addEventListener('click', () => {
-                ui.landing.classList.add('hidden');
-                ui.app.classList.add('active-app');
-                setTimeout(() => { generateProcedural(); }, 300);
-            });
+    function setupEventListeners() {
+      // Color selection
+      document.querySelectorAll('.color-swatch').forEach(swatch => {
+        swatch.addEventListener('click', (e) => {
+          document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+          e.target.classList.add('active');
+          currentColor = e.target.getAttribute('data-color');
+        });
+      });
 
-            // Back to Landing
-            ui.backToLanding.addEventListener('click', (e) => {
-                e.preventDefault();
-                ui.app.classList.remove('active-app');
-                ui.landing.classList.remove('hidden');
-            });
+      // Canvas Draw Events
+      const handlePointer = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        setPixel(x, y, currentColor);
+      };
 
-            ui.genDensity.addEventListener('input', (e) => {
-                ui.densityVal.textContent = e.target.value + '%';
-                state.density = e.target.value / 100;
-            });
-            ui.genSym.addEventListener('change', (e) => state.currentSymmetry = e.target.value);
-            ui.gridSel.addEventListener('change', () => { updateConfig(); clearCanvas(); });
-            ui.paletteSel.addEventListener('change', () => { updateConfig(); updatePaletteUI(); generateProcedural(); });
-            
-            ui.genBtn.addEventListener('click', generateProcedural);
-            ui.clear.addEventListener('click', clearCanvas);
-            ui.download.addEventListener('click', downloadCanvas);
-            ui.mobDL.addEventListener('click', downloadCanvas);
-            ui.mobClr.addEventListener('click', clearCanvas);
+      canvas.addEventListener('mousedown', (e) => { isDrawing = true; handlePointer(e); });
+      canvas.addEventListener('mousemove', (e) => { if (isDrawing) handlePointer(e); });
+      window.addEventListener('mouseup', () => { isDrawing = false; });
 
-            ui.tools.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelector('.tool-btn.active')?.classList.remove('active');
-                    btn.classList.add('active');
-                    state.activeTool = btn.dataset.tool;
-                });
-            });
+      canvas.addEventListener('touchstart', (e) => { isDrawing = true; handlePointer(e); });
+      canvas.addEventListener('touchmove', (e) => { if (isDrawing) handlePointer(e); });
+      window.addEventListener('touchend', () => { isDrawing = false; });
 
-            setupDrawingChain();
-        }
+      // Action Buttons
+      document.getElementById('btnGenerate').addEventListener('click', generateProceduralSprite);
+      
+      document.getElementById('btnClear').addEventListener('click', () => {
+        grid = Array(gridSize).fill().map(() => Array(gridSize).fill('#000000'));
+        renderCanvas();
+      });
 
-        function updatePaletteUI() {
-            ui.paletteDisp.innerHTML = '';
-            state.palette.forEach(color => {
-                const swatch = document.createElement('div');
-                swatch.className = `color-swatch ${color === state.primaryColor ? 'active' : ''}`;
-                swatch.style.backgroundColor = color;
-                swatch.addEventListener('click', () => {
-                    document.querySelector('.color-swatch.active')?.classList.remove('active');
-                    swatch.classList.add('active');
-                    state.primaryColor = color;
-                });
-                ui.paletteDisp.appendChild(swatch);
-            });
-        }
+      document.getElementById('btnSymmetry').addEventListener('click', (e) => {
+        isSymmetryEnabled = !isSymmetryEnabled;
+        e.target.innerText = `🔄 SYMMETRY: ${isSymmetryEnabled ? 'ON' : 'OFF'}`;
+      });
 
-        function drawPixel(x, y, color, updateLogic = true) {
-            if (x < 0 || x >= state.grid || y < 0 || y >= state.grid) return;
+      document.getElementById('btnExport').addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = `retropix-sprite-${Date.now()}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
 
-            ui.ctx.fillStyle = color === null ? state.bgColor : color;
-            ui.ctx.fillRect(
-                Math.floor(x * state.pixelSize), 
-                Math.floor(y * state.pixelSize), 
-                Math.ceil(state.pixelSize), 
-                Math.ceil(state.pixelSize)
-            );
-
-            if (updateLogic) {
-                state.gridData[x][y] = color;
-            }
-        }
-
-        function clearCanvas() {
-            ui.ctx.fillStyle = state.bgColor;
-            ui.ctx.fillRect(0, 0, state.res, state.res);
-            state.gridData = Array(state.grid).fill().map(() => Array(state.grid).fill(null));
-        }
-
-        function generateProcedural() {
-            clearCanvas();
-            const g = state.grid;
-            const sym = state.currentSymmetry;
-            
-            const pColor = state.primaryColor;
-            const sColor = state.palette[Math.floor(Math.random() * state.palette.length)];
-
-            let xBound = g;
-            let yBound = g;
-            if (sym === 'horizontal' || sym === 'quad') xBound = Math.ceil(g / 2);
-            if (sym === 'vertical' || sym === 'quad') yBound = Math.ceil(g / 2);
-
-            for (let x = 0; x < xBound; x++) {
-                for (let y = 0; y < yBound; y++) {
-                    if (Math.random() < state.density) {
-                        const color = Math.random() > 0.35 ? pColor : sColor;
-                        
-                        drawPixel(x, y, color);
-
-                        if (sym === 'horizontal' || sym === 'quad') drawPixel(g - 1 - x, y, color);
-                        if (sym === 'vertical' || sym === 'quad') drawPixel(x, g - 1 - y, color);
-                        if (sym === 'quad') drawPixel(g - 1 - x, g - 1 - y, color);
-                    }
-                }
-            }
-        }
-
-        function setupDrawingChain() {
-            function getCoords(e) {
-                const rect = ui.canvas.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                
-                const scaleX = ui.canvas.width / rect.width;
-                const scaleY = ui.canvas.height / rect.height;
-
-                return {
-                    x: Math.floor(((clientX - rect.left) * scaleX) / state.pixelSize),
-                    y: Math.floor(((clientY - rect.top) * scaleY) / state.pixelSize)
-                };
-            }
-
-            function handleStart(e) {
-                if (e.touches) e.preventDefault();
-                state.isDrawing = true;
-                const coords = getCoords(e);
-                
-                if (state.activeTool === 'fill') {
-                    floodFill(coords.x, coords.y, state.primaryColor);
-                    state.isDrawing = false;
-                } else {
-                    executeDraw(coords.x, coords.y);
-                }
-            }
-
-            function handleMove(e) {
-                if (!state.isDrawing || state.activeTool === 'fill') return;
-                if (e.touches) e.preventDefault();
-                const coords = getCoords(e);
-                executeDraw(coords.x, coords.y);
-            }
-
-            function handleEnd() { state.isDrawing = false; }
-
-            function executeDraw(x, y) {
-                const color = state.activeTool === 'pencil' ? state.primaryColor : null;
-                drawPixel(x, y, color);
-            }
-
-            ui.canvas.addEventListener('mousedown', handleStart);
-            window.addEventListener('mousemove', handleMove);
-            window.addEventListener('mouseup', handleEnd);
-
-            ui.canvas.addEventListener('touchstart', handleStart, { passive: false });
-            ui.canvas.addEventListener('touchmove', handleMove, { passive: false });
-            ui.canvas.addEventListener('touchend', handleEnd);
-        }
-
-        function floodFill(startX, startY, fillColor) {
-            const g = state.grid;
-            if (startX < 0 || startX >= g || startY < 0 || startY >= g) return;
-            
-            const targetColor = state.gridData[startX][startY];
-            if (targetColor === fillColor) return;
-
-            const pixelsToCheck = [[startX, startY]];
-
-            while (pixelsToCheck.length > 0) {
-                const [x, y] = pixelsToCheck.pop();
-
-                if (x >= 0 && x < g && y >= 0 && y < g && state.gridData[x][y] === targetColor) {
-                    drawPixel(x, y, fillColor);
-                    pixelsToCheck.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
-                }
-            }
-        }
-
-        function downloadCanvas() {
-            const link = document.createElement('a');
-            link.download = `RetroPix_${Date.now()}.png`;
-            link.href = ui.canvas.toDataURL('image/png');
-            link.click();
-        }
-
-        init();
-    </script>
+    // Run application
+    init();
+    generateProceduralSprite();
+  </script>
 </body>
 </html>
